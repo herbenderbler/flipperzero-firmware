@@ -1,5 +1,5 @@
 entry,status,name,type,params
-Version,+,87.1,,
+Version,+,87.2,,
 Header,+,applications/services/bt/bt_service/bt.h,,
 Header,+,applications/services/bt/bt_service/bt_keys_storage.h,,
 Header,+,applications/services/cli/cli.h,,
@@ -190,9 +190,11 @@ Header,+,targets/f7/ble_glue/furi_ble/event_dispatcher.h,,
 Header,+,targets/f7/ble_glue/furi_ble/gatt.h,,
 Header,+,targets/f7/ble_glue/furi_ble/profile_interface.h,,
 Header,+,targets/f7/ble_glue/profiles/serial_profile.h,,
+Header,+,targets/f7/ble_glue/profiles/u2f_profile.h,,
 Header,+,targets/f7/ble_glue/services/battery_service.h,,
 Header,+,targets/f7/ble_glue/services/dev_info_service.h,,
 Header,+,targets/f7/ble_glue/services/serial_service.h,,
+Header,+,targets/f7/ble_glue/services/u2f_service.h,,
 Header,+,targets/f7/furi_hal/furi_hal_bus.h,,
 Header,+,targets/f7/furi_hal/furi_hal_clock.h,,
 Header,+,targets/f7/furi_hal/furi_hal_dma.h,,
@@ -683,6 +685,9 @@ Function,+,ble_profile_serial_notify_buffer_is_empty,void,FuriHalBleProfileBase*
 Function,+,ble_profile_serial_set_event_callback,void,"FuriHalBleProfileBase*, uint16_t, FuriHalBtSerialCallback, void*"
 Function,+,ble_profile_serial_set_rpc_active,void,"FuriHalBleProfileBase*, _Bool"
 Function,+,ble_profile_serial_tx,_Bool,"FuriHalBleProfileBase*, uint8_t*, uint16_t"
+Function,+,ble_profile_u2f_send_keepalive,_Bool,"FuriHalBleProfileBase*, uint8_t"
+Function,+,ble_profile_u2f_send_response,_Bool,"FuriHalBleProfileBase*, const uint8_t*, uint16_t"
+Function,+,ble_profile_u2f_set_request_callback,void,"FuriHalBleProfileBase*, BleSvcU2fRequestCallback, void*"
 Function,+,ble_svc_battery_start,BleServiceBattery*,_Bool
 Function,+,ble_svc_battery_state_update,void,"uint8_t*, _Bool*"
 Function,+,ble_svc_battery_stop,void,BleServiceBattery*
@@ -701,6 +706,11 @@ Function,+,ble_svc_serial_set_rpc_active,void,"BleServiceSerial*, _Bool"
 Function,+,ble_svc_serial_start,BleServiceSerial*,
 Function,+,ble_svc_serial_stop,void,BleServiceSerial*
 Function,+,ble_svc_serial_update_tx,_Bool,"BleServiceSerial*, uint8_t*, uint16_t"
+Function,+,ble_svc_u2f_send_keepalive,_Bool,"BleServiceU2f*, uint8_t"
+Function,+,ble_svc_u2f_send_response,_Bool,"BleServiceU2f*, const uint8_t*, uint16_t"
+Function,+,ble_svc_u2f_set_request_callback,void,"BleServiceU2f*, BleSvcU2fRequestCallback, void*"
+Function,+,ble_svc_u2f_start,BleServiceU2f*,
+Function,+,ble_svc_u2f_stop,void,BleServiceU2f*
 Function,-,bsearch,void*,"const void*, const void*, size_t, size_t, __compar_fn_t"
 Function,+,bt_disconnect,void,Bt*
 Function,+,bt_forget_bonded_devices,void,Bt*
@@ -2968,6 +2978,7 @@ Variable,-,_sys_errlist,const char* const[],
 Variable,-,_sys_nerr,int,
 Variable,-,ble_profile_hid,const FuriHalBleProfileTemplate*,
 Variable,+,ble_profile_serial,const FuriHalBleProfileTemplate* const,
+Variable,+,ble_profile_u2f,const FuriHalBleProfileTemplate* const,
 Variable,+,compress_config_heatshrink_default,const CompressConfigHeatshrink,
 Variable,+,firmware_api_interface,const ElfApiInterface* const,
 Variable,+,furi_hal_i2c_bus_external,FuriHalI2cBus,
