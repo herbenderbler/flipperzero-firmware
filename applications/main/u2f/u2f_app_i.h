@@ -13,7 +13,7 @@
 #include <gui/modules/variable_item_list.h>
 #include <gui/modules/widget.h>
 #include "views/u2f_view.h"
-#include "u2f_hid.h"
+#include "u2f_transport.h"
 #include "u2f.h"
 
 typedef enum {
@@ -53,10 +53,11 @@ struct U2fApp {
     NotificationApp* notifications;
     Widget* widget;
     FuriTimer* timer;
-    U2fHid* u2f_hid;
+    U2fTransport* transport;
     U2fView* u2f_view;
     U2fData* u2f_instance;
     GpioCustomEvent event_cur;
     bool u2f_ready;
     U2fAppError error;
+    U2fTransportType transport_type;
 };

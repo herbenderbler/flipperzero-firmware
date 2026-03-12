@@ -47,6 +47,8 @@ U2fApp* u2f_app_alloc(void) {
     view_dispatcher_add_view(
         app->view_dispatcher, U2fAppViewMain, u2f_view_get_view(app->u2f_view));
 
+    app->transport_type = U2fTransportTypeUsb; /* Default; BLE available via U2fTransportTypeBle */
+
     if(furi_hal_usb_is_locked()) {
         app->error = U2fAppErrorCloseRpc;
         scene_manager_next_scene(app->scene_manager, U2fSceneError);
