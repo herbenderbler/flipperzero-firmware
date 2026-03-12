@@ -75,10 +75,7 @@ static void ble_profile_u2f_get_config(GapConfig* config, FuriHalBleProfileParam
     furi_check(config);
     memcpy(config, &u2f_template_config, sizeof(GapConfig));
     memcpy(config->mac_address, furi_hal_version_get_ble_mac(), sizeof(config->mac_address));
-    strlcpy(
-        config->adv_name,
-        "Flipper U2F",
-        FURI_HAL_VERSION_DEVICE_NAME_LENGTH);
+    strlcpy(config->adv_name, "Flipper U2F", FURI_HAL_VERSION_DEVICE_NAME_LENGTH);
 }
 
 static const FuriHalBleProfileTemplate profile_callbacks = {

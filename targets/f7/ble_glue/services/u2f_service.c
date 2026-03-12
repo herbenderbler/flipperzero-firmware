@@ -91,9 +91,8 @@ static const BleGattCharacteristicParams ble_svc_u2f_chars[U2fSvcCharCount] = {
          .uuid.Char_UUID_128 = BLE_U2F_SERVICE_REVISION_BITFIELD_UUID,
          .uuid_type = UUID_TYPE_128,
          .char_properties = CHAR_PROP_READ | CHAR_PROP_WRITE,
-         .security_permissions =
-             ATTR_PERMISSION_AUTHEN_READ | ATTR_PERMISSION_AUTHEN_WRITE |
-             ATTR_PERMISSION_ENCRY_READ | ATTR_PERMISSION_ENCRY_WRITE,
+         .security_permissions = ATTR_PERMISSION_AUTHEN_READ | ATTR_PERMISSION_AUTHEN_WRITE |
+                                 ATTR_PERMISSION_ENCRY_READ | ATTR_PERMISSION_ENCRY_WRITE,
          .gatt_evt_mask = GATT_NOTIFY_ATTRIBUTE_WRITE,
          .is_variable = CHAR_VALUE_LEN_CONSTANT},
 };
@@ -193,8 +192,7 @@ BleServiceU2f* ble_svc_u2f_start(void) {
     if(!svc) return NULL;
     memset(svc, 0, sizeof(BleServiceU2f));
 
-    svc->event_handler =
-        ble_event_dispatcher_register_svc_handler(ble_svc_u2f_event_handler, svc);
+    svc->event_handler = ble_event_dispatcher_register_svc_handler(ble_svc_u2f_event_handler, svc);
 
     static const uint16_t service_uuid = 0xFFFD;
     if(!ble_gatt_service_add(

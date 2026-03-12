@@ -52,7 +52,8 @@ static int32_t u2f_ble_worker(void* context) {
     uint8_t req_buf[BLE_SVC_U2F_REQUEST_MAX_LEN];
 
     while(1) {
-        uint32_t flags = furi_thread_flags_wait(STOP_FLAG | REQUEST_FLAG, FuriFlagWaitAny, FuriWaitForever);
+        uint32_t flags =
+            furi_thread_flags_wait(STOP_FLAG | REQUEST_FLAG, FuriFlagWaitAny, FuriWaitForever);
         if(flags & FuriFlagError) break;
         if(flags & STOP_FLAG) break;
 
