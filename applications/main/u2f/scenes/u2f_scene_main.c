@@ -115,7 +115,9 @@ void u2f_scene_main_on_enter(void* context) {
         if(app->transport == NULL) {
             app->u2f_ready = false;
             u2f_free(app->u2f_instance);
-            u2f_view_set_state(app->u2f_view, U2fMsgError);
+            u2f_view_set_state(
+                app->u2f_view,
+                app->transport_type == U2fTransportTypeBle ? U2fMsgBleUnavailable : U2fMsgError);
         } else {
             u2f_view_set_ok_callback(app->u2f_view, u2f_scene_main_ok_callback, app);
         }
