@@ -20,7 +20,7 @@
 #define U2F_BLE_CMD_ERROR 0xbf
 
 #define U2F_BLE_ERR_INVALID_CMD       0x01
-#define U2F_BLE_KEEPALIVE_PROCESSING  0x01
+#define U2F_BLE_KEEPALIVE_TUP_NEEDED  0x02 /* Test of User Presence needed */
 #define U2F_BLE_KEEPALIVE_INTERVAL_MS 200
 
 #define REQUEST_FLAG (1u << 0)
@@ -42,7 +42,7 @@ typedef struct {
 static void u2f_ble_keepalive_timer_callback(void* context) {
     U2fTransportBle* ble = context;
     if(ble->processing) {
-        ble_profile_u2f_send_keepalive(ble->profile, U2F_BLE_KEEPALIVE_PROCESSING);
+        ble_profile_u2f_send_keepalive(ble->profile, U2F_BLE_KEEPALIVE_TUP_NEEDED);
         furi_timer_start(ble->keepalive_timer, U2F_BLE_KEEPALIVE_INTERVAL_MS);
     }
 }
