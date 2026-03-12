@@ -6,6 +6,8 @@ struct U2fView {
     View* view;
     U2fOkCallback callback;
     void* context;
+    U2fLeftCallback left_callback;
+    void* left_context;
 };
 
 typedef struct {
@@ -53,6 +55,9 @@ static bool u2f_view_input_callback(InputEvent* event, void* context) {
         if(event->key == InputKeyOk) {
             consumed = true;
             if(u2f->callback != NULL) u2f->callback(InputTypeShort, u2f->context);
+        } else if(event->key == InputKeyLeft && u2f->left_callback != NULL) {
+            consumed = true;
+            u2f->left_callback(u2f->left_context);
         }
     }
 
@@ -62,6 +67,10 @@ static bool u2f_view_input_callback(InputEvent* event, void* context) {
 U2fView* u2f_view_alloc(void) {
     U2fView* u2f = malloc(sizeof(U2fView));
 
+    u2f->callback = NULL;
+    u2f->context = NULL;
+    u2f->left_callback = NULL;
+    u2f->left_context = NULL;
     u2f->view = view_alloc();
     view_allocate_model(u2f->view, ViewModelTypeLocking, sizeof(U2fModel));
     view_set_context(u2f->view, u2f);
@@ -94,6 +103,12 @@ void u2f_view_set_ok_callback(U2fView* u2f, U2fOkCallback callback, void* contex
             u2f->context = context;
         },
         false);
+}
+
+void u2f_view_set_left_callback(U2fView* u2f, U2fLeftCallback callback, void* context) {
+    furi_assert(u2f);
+    u2f->left_callback = callback;
+    u2f->left_context = context;
 }
 
 void u2f_view_set_state(U2fView* u2f, U2fViewMsg msg) {

@@ -38,12 +38,14 @@ typedef enum {
     U2fCustomEventConfirm,
 
     U2fCustomEventErrorBack,
+    U2fCustomEventOpenConfig,
 
 } GpioCustomEvent;
 
 typedef enum {
     U2fAppViewError,
     U2fAppViewMain,
+    U2fAppViewConfig,
 } U2fAppView;
 
 struct U2fApp {
@@ -60,4 +62,7 @@ struct U2fApp {
     bool u2f_ready;
     U2fAppError error;
     U2fTransportType transport_type;
+    VariableItemList* var_item_list;
 };
+
+void u2f_save_settings(const U2fApp* app);

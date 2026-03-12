@@ -14,6 +14,12 @@ static void u2f_scene_main_ok_callback(InputType type, void* context) {
     view_dispatcher_send_custom_event(app->view_dispatcher, U2fCustomEventConfirm);
 }
 
+static void u2f_scene_main_left_callback(void* context) {
+    furi_assert(context);
+    U2fApp* app = context;
+    view_dispatcher_send_custom_event(app->view_dispatcher, U2fCustomEventOpenConfig);
+}
+
 static void u2f_scene_main_event_callback(U2fNotifyEvent evt, void* context) {
     furi_assert(context);
     U2fApp* app = context;
@@ -84,6 +90,10 @@ bool u2f_scene_main_on_event(void* context, SceneManagerEvent event) {
             notification_message(app->notifications, &sequence_set_red_255);
             furi_timer_stop(app->timer);
             u2f_view_set_state(app->u2f_view, U2fMsgError);
+        } else if(event.event == U2fCustomEventOpenConfig) {
+            if(app->event_cur == U2fCustomEventNone) {
+                scene_manager_next_scene(app->scene_manager, U2fSceneConfig);
+            }
         }
         consumed = true;
     }
@@ -98,10 +108,17 @@ void u2f_scene_main_on_enter(void* context) {
 
     app->u2f_instance = u2f_alloc();
     app->u2f_ready = u2f_init(app->u2f_instance);
+    u2f_view_set_left_callback(app->u2f_view, u2f_scene_main_left_callback, app);
     if(app->u2f_ready == true) {
         u2f_set_event_callback(app->u2f_instance, u2f_scene_main_event_callback, app);
         app->transport = u2f_transport_start(app->u2f_instance, app->transport_type);
-        u2f_view_set_ok_callback(app->u2f_view, u2f_scene_main_ok_callback, app);
+        if(app->transport == NULL) {
+            app->u2f_ready = false;
+            u2f_free(app->u2f_instance);
+            u2f_view_set_state(app->u2f_view, U2fMsgError);
+        } else {
+            u2f_view_set_ok_callback(app->u2f_view, u2f_scene_main_ok_callback, app);
+        }
     } else {
         u2f_free(app->u2f_instance);
         u2f_view_set_state(app->u2f_view, U2fMsgError);
@@ -115,8 +132,9 @@ void u2f_scene_main_on_exit(void* context) {
     notification_message_block(app->notifications, &sequence_reset_rgb);
     furi_timer_stop(app->timer);
     furi_timer_free(app->timer);
-    if(app->u2f_ready == true) {
+    if(app->u2f_ready == true && app->transport != NULL) {
         u2f_transport_stop(app->transport);
+        app->transport = NULL;
         u2f_free(app->u2f_instance);
     }
 }

@@ -19,7 +19,9 @@
 #define U2F_BLE_CMD_MSG   0x83
 #define U2F_BLE_CMD_ERROR 0xbf
 
-#define U2F_BLE_ERR_INVALID_CMD 0x01
+#define U2F_BLE_ERR_INVALID_CMD       0x01
+#define U2F_BLE_KEEPALIVE_PROCESSING  0x01
+#define U2F_BLE_KEEPALIVE_INTERVAL_MS 200
 
 #define REQUEST_FLAG (1u << 0)
 #define STOP_FLAG    (1u << 1)
@@ -30,10 +32,20 @@ typedef struct {
     U2fData* u2f_data;
     FuriThread* thread;
     FuriMutex* mutex;
+    FuriTimer* keepalive_timer;
+    volatile bool processing;
     uint8_t req_buf[BLE_SVC_U2F_REQUEST_MAX_LEN];
     uint16_t req_len;
     bool stop_requested;
 } U2fTransportBle;
+
+static void u2f_ble_keepalive_timer_callback(void* context) {
+    U2fTransportBle* ble = context;
+    if(ble->processing) {
+        ble_profile_u2f_send_keepalive(ble->profile, U2F_BLE_KEEPALIVE_PROCESSING);
+        furi_timer_start(ble->keepalive_timer, U2F_BLE_KEEPALIVE_INTERVAL_MS);
+    }
+}
 
 static void u2f_ble_request_callback(const uint8_t* data, uint16_t len, void* context) {
     U2fTransportBle* ble = context;
@@ -88,7 +100,11 @@ static int32_t u2f_ble_worker(void* context) {
         }
 
         if(data_len > req_len - 3) data_len = req_len - 3;
+        ble->processing = true;
+        furi_timer_start(ble->keepalive_timer, U2F_BLE_KEEPALIVE_INTERVAL_MS);
         uint16_t resp_len = u2f_msg_parse(ble->u2f_data, req_buf + 3, data_len);
+        furi_timer_stop(ble->keepalive_timer);
+        ble->processing = false;
 
         if(resp_len == 0) {
             resp_buf[0] = U2F_BLE_CMD_ERROR;
@@ -129,6 +145,9 @@ static U2fTransportBle* u2f_ble_start_impl(U2fData* u2f_data) {
     ble->profile = profile;
     ble->u2f_data = u2f_data;
     ble->mutex = furi_mutex_alloc(FuriMutexTypeNormal);
+    ble->keepalive_timer =
+        furi_timer_alloc(u2f_ble_keepalive_timer_callback, FuriTimerTypeOnce, ble);
+    ble->processing = false;
     ble->req_len = 0;
     ble->stop_requested = false;
 
@@ -145,9 +164,11 @@ static U2fTransportBle* u2f_ble_start_impl(U2fData* u2f_data) {
 static void u2f_ble_stop_impl(U2fTransportBle* ble) {
     if(!ble) return;
     ble->stop_requested = true;
+    furi_timer_stop(ble->keepalive_timer);
     furi_thread_flags_set(furi_thread_get_id(ble->thread), STOP_FLAG);
     furi_thread_join(ble->thread);
     furi_thread_free(ble->thread);
+    furi_timer_free(ble->keepalive_timer);
     bt_profile_restore_default(ble->bt);
     u2f_set_state(ble->u2f_data, 0);
     furi_record_close(RECORD_BT);
