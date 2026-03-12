@@ -2,6 +2,7 @@
  * U2F transport layer: dispatches to USB HID or BLE.
  */
 #include "u2f_transport.h"
+#include "u2f_transport_ble.h"
 #include "u2f_hid.h"
 #include <furi.h>
 #include <stdlib.h>
@@ -44,10 +45,16 @@ U2fTransport* u2f_transport_start(U2fData* u2f_data, U2fTransportType type) {
         FURI_LOG_I(TAG, "Started USB HID transport");
         break;
     }
-    case U2fTransportTypeBle:
-        /* BLE transport added in a later commit */
-        free(transport);
-        return NULL;
+    case U2fTransportTypeBle: {
+        void* ble = u2f_transport_ble_start(u2f_data);
+        if(!ble) {
+            free(transport);
+            return NULL;
+        }
+        transport->impl.ble = ble;
+        FURI_LOG_I(TAG, "Started BLE transport");
+        break;
+    }
     default:
         free(transport);
         return NULL;
@@ -65,6 +72,8 @@ void u2f_transport_stop(U2fTransport* transport) {
         FURI_LOG_I(TAG, "Stopped USB HID transport");
         break;
     case U2fTransportTypeBle:
+        u2f_transport_ble_stop(transport->impl.ble);
+        FURI_LOG_I(TAG, "Stopped BLE transport");
         break;
     default:
         break;
